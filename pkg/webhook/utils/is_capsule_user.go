@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	"github.com/clastix/capsule/pkg/utils"
@@ -8,11 +10,14 @@ import (
 
 func IsCapsuleUser(req admission.Request, userGroups []string) bool {
 	groupList := utils.NewUserGroupList(req.UserInfo.Groups)
-	// if the user is a ServiceAccount belonging to the kube-system namespace, definitely, it's not a Capsule user
+	// if the user is a ServiceAccount belonging to an exluded namespace, definitely, it's not a Capsule user
 	// and we can skip the check in case of Capsule user group assigned to system:authenticated
 	// (ref: https://github.com/clastix/capsule/issues/234)
-	if groupList.Find("system:serviceaccounts:kube-system") {
-		return false
+	excludedNamespaces := []string{"kube-system", "flux-system", "capsule-system"}
+	for _, ns := range excludedNamespaces {
+		if groupList.Find(fmt.Sprintf("system:serviceaccounts:%s", ns)) {
+			return false
+		}
 	}
 
 	for _, group := range userGroups {
