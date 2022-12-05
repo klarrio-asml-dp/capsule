@@ -13,7 +13,7 @@ func IsCapsuleUser(req admission.Request, userGroups []string) bool {
 	// if the user is a ServiceAccount belonging to an exluded namespace, definitely, it's not a Capsule user
 	// and we can skip the check in case of Capsule user group assigned to system:authenticated
 	// (ref: https://github.com/clastix/capsule/issues/234)
-	excludedNamespaces := []string{"kube-system", "flux-system", "capsule-system"}
+	excludedNamespaces := []string{"kube-system", "flux-system", "dp-capsule", "dp-flux"}
 	for _, ns := range excludedNamespaces {
 		if groupList.Find(fmt.Sprintf("system:serviceaccounts:%s", ns)) {
 			return false
